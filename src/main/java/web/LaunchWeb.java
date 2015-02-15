@@ -20,7 +20,6 @@ public class LaunchWeb {
 		return photoManager;
 	}
 	
-	
 	public static void main(String[] args) {
 		SpringApplication.run(LaunchWeb.class, args);
 	}
