@@ -54,7 +54,7 @@ public class FSPhotoManager implements PhotoManager {
 	}
 
 	@Override
-	public void deleteUser(String photoId) {
+	public void deletePhoto(String photoId) {
 		HashMap<String, Photo> photoMap = getPhotoMap();
 		photoMap.remove(photoId);
 		persistPhotoMap(photoMap);

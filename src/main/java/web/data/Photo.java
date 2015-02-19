@@ -18,6 +18,9 @@ public class Photo {
 	}
 	
 	public void setOwner(String owner) {
+		if(owner == null) {
+			owner = "N/A";
+		}
 		this.owner = owner;
 	}
 	

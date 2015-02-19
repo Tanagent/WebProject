@@ -9,7 +9,7 @@ public interface PhotoManager {
 	
 	public void updatePhoto(Photo photo);
 	
-	public void deleteUser(String photoId);
+	public void deletePhoto(String photoId);
 	
 	public List<Photo> listAllPhotos();
 }

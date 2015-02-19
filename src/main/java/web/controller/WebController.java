@@ -1,25 +1,33 @@
 package web.controller;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.List;
 
 
 
 
 
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import web.data.Photo;
 import web.data.provider.PhotoManager;
+import web.LaunchWeb;
 
 
+@SuppressWarnings("unused")
 @RestController
+@Controller
 public class WebController {
 
 	@Autowired
@@ -41,9 +49,9 @@ public class WebController {
      * Try it in your web browser:
      * 	http://localhost:8080/cs480/user/user101
      */
-    @RequestMapping(value = "/cs480/user/{userId}", method = RequestMethod.GET)
-    Photo getPhoto(@PathVariable("userId") String userId) {
-    	Photo photo = photoManager.getPhoto(userId);
+    @RequestMapping(value = "/cs480/user/{photoId}", method = RequestMethod.GET)
+    Photo getPhoto(@PathVariable("photoId") String photoId) {
+    	Photo photo = photoManager.getPhoto(photoId);
         return photo;
     }
     
@@ -65,9 +73,9 @@ public class WebController {
      * @param owner
      * @return
      */
-    @RequestMapping(value = "/cs480/user/{userId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/cs480/user/{photoId}", method = RequestMethod.POST)
     Photo updatePhoto(
-    		@PathVariable("userId") String id,
+    		@PathVariable("photoId") String id,
     		@RequestParam("name") String name,
     		@RequestParam(value = "owner", required = false) String owner) {
     	Photo photo = new Photo();
@@ -83,10 +91,10 @@ public class WebController {
      *
      * @param userId
      */
-    @RequestMapping(value = "/cs480/user/{userId}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/cs480/user/{photoId}", method = RequestMethod.DELETE)
     void deletePhoto(
-    		@PathVariable("userId") String userId) {
-    	((WebController) photoManager).deletePhoto(userId);
+    		@PathVariable("photoId") String photoId) {
+    	photoManager.deletePhoto(photoId);
     }
 
     /**
@@ -105,9 +113,33 @@ public class WebController {
      * functionalities used in this web service.
      */
     @RequestMapping(value = "/cs480/home", method = RequestMethod.GET)
-    ModelAndView getUserHomepage() {
+    ModelAndView getPhotoHomepage() {
         ModelAndView modelAndView = new ModelAndView("home");
-        modelAndView.addObject("users", listAllPhotos());
+        modelAndView.addObject("photos", listAllPhotos());
         return modelAndView;
+    }
+    
+    @RequestMapping(value="/upload", method=RequestMethod.GET)
+    public @ResponseBody String provideUploadInfo() {
+        return "You can upload a file by posting to this same URL.";
+    }
+    
+    @RequestMapping(value="/upload", method=RequestMethod.POST)
+    public @ResponseBody String handleFileUpload(@RequestParam("name") String name, 
+            @RequestParam("file") MultipartFile file){
+        if (!file.isEmpty()) {
+            try {
+                byte[] bytes = file.getBytes();
+                BufferedOutputStream stream = 
+                        new BufferedOutputStream(new FileOutputStream(new File(name)));
+                stream.write(bytes);
+                stream.close();
+                return "You successfully uploaded " + name + "!";
+            } catch (Exception e) {
+                return "You failed to upload " + name + " => " + e.getMessage();
+            }
+        } else {
+            return "You failed to upload " + name + " because the file was empty.";
+        }
     }
 }
