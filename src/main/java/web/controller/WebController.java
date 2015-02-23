@@ -3,12 +3,25 @@ package web.controller;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 
 
 
 
 
+
+
+
+
+
+
+
+
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,17 +34,21 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import web.data.Photo;
+import web.data.provider.FSPhotoManager;
 import web.data.provider.PhotoManager;
+import web.util.ResourceResolver;
 import web.LaunchWeb;
 
 
 @SuppressWarnings("unused")
 @RestController
 @Controller
-public class WebController {
+public class WebController implements java.io.Serializable {
 
 	@Autowired
 	private PhotoManager photoManager;
+	
+	private static Logger logger = LoggerFactory.getLogger(WebController.class);
 	
 	// http://localhost:8080/example
 	@RequestMapping(value = "/example", method = RequestMethod.GET)
@@ -53,6 +70,24 @@ public class WebController {
     Photo getPhoto(@PathVariable("photoId") String photoId) {
     	Photo photo = photoManager.getPhoto(photoId);
         return photo;
+    }
+    
+    @RequestMapping(value = "/{photoId}", method = RequestMethod.GET)
+    void getPhoto(
+            @PathVariable("userId") String userId,
+            @PathVariable("photoId") String photoId,
+            HttpServletResponse response) {
+    	long startTime = System.currentTimeMillis();
+    	try {
+    		logger.debug("Accessing the getPhoto method in the WebController class");
+    		FSPhotoManager.getPhoto(userId, photoId, response);
+    		long endTime = System.currentTimeMillis() - startTime;
+    	} catch (IOException e) {
+    		logger.error("IOException with using getPhoto");
+    		logger.error("Exception: " + e);
+    		e.printStackTrace();
+    		long endTime = System.currentTimeMillis() - startTime;
+    	}
     }
     
     /**
@@ -131,7 +166,9 @@ public class WebController {
             try {
                 byte[] bytes = file.getBytes();
                 BufferedOutputStream stream = 
-                        new BufferedOutputStream(new FileOutputStream(new File(name)));
+                        new BufferedOutputStream(
+                        		new FileOutputStream(
+                        				new File("C:\\Users\\Brian\\workspace\\WebProject\\PhotoBucket\\" + name)));
                 stream.write(bytes);
                 stream.close();
                 return "You successfully uploaded " + name + "!";
@@ -141,5 +178,27 @@ public class WebController {
         } else {
             return "You failed to upload " + name + " because the file was empty.";
         }
+    }
+    
+    @RequestMapping(value = "/{photoId}", method = RequestMethod.POST)
+    void addPhoto(
+            @PathVariable("userId") String userId,
+            @RequestParam("photoFile") MultipartFile file,
+            HttpServletResponse response) {
+    	long startTime = System.currentTimeMillis();
+    	logger.info("UserID: " + userId);
+    	logger.debug("Accessing the WebController addPhoto method");
+    	try {
+			FSPhotoManager.addPhoto(userId, file);
+			long endTime = System.currentTimeMillis() - startTime;
+		} catch (Exception e) {
+			e.printStackTrace();
+			long endTime = System.currentTimeMillis() - startTime;
+		} 
+    }
+    
+    @RequestMapping(value = "/photos", method = RequestMethod.GET)
+    List<String> listPhotos(@PathVariable("userId") String userId) {
+    	return FSPhotoManager.listPhotos(userId);
     }
 }

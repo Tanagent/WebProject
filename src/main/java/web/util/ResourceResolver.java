@@ -11,4 +11,13 @@ public class ResourceResolver {
 			file.getParentFile().mkdirs();
 		return file;
 	}
+	
+	public static File getUserFile(String photoId) {
+		System.out.println(BASE_DIR);
+		File file = new File(BASE_DIR + "/" + photoId + "/" + photoId + ".json");
+		if (!file.getParentFile().exists()) {
+			file.getParentFile().mkdirs();
+		}
+		return file;
+	}
 }

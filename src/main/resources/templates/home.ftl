@@ -84,12 +84,47 @@
         </div>
     </div>
     
+    <hr>
+    
     <form method="POST" enctype="multipart/form-data"
 		action="/upload">
 		File to upload: <input type="file" name="file"><br /> Name: <input
 			type="text" name="name"><br /> <br /> <input type="submit"
 			value="Upload"> Press here to upload the file!
 	</form>
+	
+	<!-- Photos -->
+    <hr>
+    <div>
+        <label>Photos:</label>    
+        <ul>
+            <#if photos??>
+            <#list photos as photo>
+              <li>
+                <div>
+                    <div>
+                        ${photo}
+                        <button id="deleteButton" onclick="deletePhoto('${photo.id}', '${photo}')">Delete</button>
+                    </div>
+                    <div>
+                        <#list filters as filter>
+                            <input class="filter-checkbox" id="${photo}" type="checkbox" name="${filter}">${filter}</input>
+                        </#list>
+                        <div>
+                            <button id="applyFilterButton" onclick="applyFilters('${user.id}', '${photo}')">Apply</button>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="/iphoto/${user.id}/photo/${photo}" target="_blank">
+                            <img src="/iphoto/${user.id}/photo/${photo}" width="240"/>
+                        </a>
+                    </div>
+                </div>
+              </li>
+            </#list>
+            </#if>
+        </ul>
+    </div> 
     
 </body>
 
