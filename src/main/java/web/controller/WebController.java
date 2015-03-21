@@ -242,6 +242,10 @@ public class WebController implements java.io.Serializable {
      * This method calls the static "getRandom" method in the FSPhotoManager class and 
      * passes in the "listPhotos" method that lists all the name of the photos that are
      * in the folder. 
+     * 
+     * Make sure that there is at least one photo in PhotoBucket or else the link will
+     * not work.
+     * 
      * @param response - the incoming HTML response.
      * @throws IOException - exception caused by IO issues.
      * @throws FileNotFoundException - exception caused by not finding the file.

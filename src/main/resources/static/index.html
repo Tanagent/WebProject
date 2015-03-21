@@ -1,6 +1,6 @@
 <html>
 	<head>
-	    <title>Demo HomePage</title>
+	    <title>Photo Album</title>
 	    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
 	    <script src="/js/home-control.js"></script>
 	    <script>
@@ -11,15 +11,10 @@
 	</head>
 
 	<body onload="refresh();">
-		Demo Project is running: <label id="status"></label>
+		Photo Album is running: 
+		<br>
+		<label id="status"></label>
 		<img src="/photo/random"></img>
 	</body>
-	
-	<form method="POST" enctype="multipart/form-data"
-		action="/upload">
-		File to upload: <input type="file" name="file"><br /> Name: <input
-			type="text" name="name"><br /> <br /> <input type="submit"
-			value="Upload"> Press here to upload the file!
-	</form>
 
 </html>

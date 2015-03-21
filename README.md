@@ -1,1 +1,3 @@
-# WebProject
+A project that allows users to upload photos to the site and have it slide through the individual photos manually.
+
+The project will consist of a home page that will allow the user to upload any JPG file and have it all displayed in the front page. The user is allowed to delete a photo as they wish. There is a separate section within the homepage that allows user to record the information of each photo that was uploaded. 
