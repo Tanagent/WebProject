@@ -3,10 +3,16 @@
 	    <title>Demo HomePage</title>
 	    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
 	    <script src="/js/home-control.js"></script>
+	    <script>
+	    function refresh() {
+		    setTimeout("location.reload(true);", 3000);
+	    }
+	    </script>
 	</head>
 
-	<body onload="healthCheck();">
+	<body onload="refresh();">
 		Demo Project is running: <label id="status"></label>
+		<img src="/photo/random"></img>
 	</body>
 	
 	<form method="POST" enctype="multipart/form-data"

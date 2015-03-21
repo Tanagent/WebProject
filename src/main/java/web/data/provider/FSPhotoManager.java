@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -25,9 +26,28 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class FSPhotoManager implements PhotoManager {
 	
+	/**
+	 * We persist all the user related objects as JSON.
+	 * 
+	 * For more information about JSON and ObjectMapper, please see:
+	 * http://www.journaldev.com/2324/jackson-json-proecessing-api-in-java-example-tutorial
+	 * 
+	 * or Google tons of tutorials.
+	 */
 	private static final ObjectMapper JSON = new ObjectMapper();
+	
+	/**
+	 * Represents the  static Logger that can be used
+	 * to log info on various levels throughout the
+	 * FSPhotoManager class.
+	 */
 	private static Logger logger = LoggerFactory.getLogger(FSPhotoManager.class);
 	
+	/**
+	 * Load the photo map from the local file.
+	 * 
+	 * @return a hashmap of all the photo information.
+	 */
 	@SuppressWarnings("unchecked")
 	private HashMap<String, Photo> getPhotoMap() {
 		HashMap<String, Photo> photoMap = null;
@@ -44,6 +64,11 @@ public class FSPhotoManager implements PhotoManager {
 		return photoMap;
 	}
 	
+	/**
+	 * Save and persist the photo map in the local file.
+	 * 
+	 * @param photoMap - the list of photo information in the local file.
+	 */
 	private void persistPhotoMap(HashMap<String, Photo> photoMap) {
 		try {
 			JSON.writeValue(ResourceResolver.getUserFile(), photoMap);
@@ -78,33 +103,43 @@ public class FSPhotoManager implements PhotoManager {
 		return new ArrayList<Photo>(photoMap.values());
 	}
 	
-	public static void getPhoto(String userId, String photoId, HttpServletResponse response) throws FileNotFoundException, IOException {
-		logger.warn("Photos must be of type jpg");
-		File photoFile = new File(ResourceResolver.getUserFile(userId).getParent() + "/" + photoId + ".jpg");
-		InputStream is = new FileInputStream(photoFile);
-		OutputStream os = response.getOutputStream();
-		IOUtils.copy(is, os);
-		is.close();
-		os.close();
-		response.setContentType("image/jpeg");
-		response.flushBuffer();
-	}
-	
-	public static void addPhoto(String userId, MultipartFile file) throws IOException, NullPointerException {
+	/**
+	 * Handles adding a photo to our disk.
+	 * An input stream is created as well as
+	 * a corresponding output stream which
+	 * directs to the correct user's folder.
+	 * The "copy" method is utilized to store
+	 * the information from our input stream
+	 * into our output stream.
+	 * 
+	 * @param file - the photo to be uploaded
+	 * @throws IOException - exception caused by IO issues.
+	 * @throws NullPointerException - exception caused by a null object.
+	 */
+	public static void addPhoto(MultipartFile file) throws IOException, NullPointerException {
 		logger.warn("Errors may be thrown in the PhotoManager addPhoto method");
-		logger.debug("UserID from the PhotoManager addPhoto method: " + userId);
 		InputStream is = file.getInputStream();
-    	OutputStream os = new FileOutputStream(ResourceResolver.getUserFile(userId).getParent() + "/" + file.getOriginalFilename());
+    	OutputStream os = new FileOutputStream(ResourceResolver.getUserFile().getParent() + "/" + file.getOriginalFilename());
     	IOUtils.copy(is, os);
     	is.close();
     	os.close();
 	}
 	
-	public static ArrayList<String> listPhotos(String userId) {
-		logger.debug("UserID from PhotoManager listPhotos method: " + userId);
+	/**
+	 * Handles listing all of the photo names in
+	 * your local browser. This is done by listing
+	 * all of your files in the user's directory.
+	 * Each file is then iterated over and stored in
+	 *  an ArrayList<String> Only the files that have the
+	 *  extension .jpg are displayed.
+	 *  
+	 * @return a list of photo names.
+	 */
+	public static ArrayList<String> listPhotos() {
+		logger.debug("UserID from PhotoManager listPhotos method: ");
 		ArrayList<String> Ids = new ArrayList<String>();
-		System.out.println(ResourceResolver.getUserFile(userId).getParent() + "/");
-		File[] files = new File(ResourceResolver.getUserFile(userId).getParent() + "/").listFiles();
+		System.out.println("C:\\Users\\Brian\\workspace\\WebProject\\PhotoBucket\\");
+		File[] files = new File("C:\\Users\\Brian\\workspace\\WebProject\\PhotoBucket\\").listFiles();
 		
 		for (int i = 0; i < files.length; i++) {
 			logger.debug("iteration count: " + i);
@@ -118,4 +153,38 @@ public class FSPhotoManager implements PhotoManager {
 		}
 		return Ids;
 	}
+	
+	/**
+	 * Handles deleting a photo from the disk.
+	 * This is done by opening the file corresponding
+	 * to the appropriate path given the the userID and the
+	 * photoID. This file is then deleted using the "delete"
+	 * method.
+	 * 
+	 * @param photoId - the name of the photo. 
+	 * @return - a String denoting the status of the deletion.
+	 */
+	public static String deletePicture(String photoId) {
+		File file = new File("C:\\Users\\Brian\\workspace\\WebProject\\PhotoBucket\\" + photoId + ".jpg");
+		
+		if (file.delete()) {
+			return "File Deleted";
+		} else {
+			return "File Not Deleted";
+		}
+	}
+	
+	/**
+	 * Handles randomizing a photo from the disk.
+	 * This is done by randomly choosing a photo
+	 * in the array with the JAVA API.
+	 * 
+	 * @param list - the list of photos.
+	 * @return - a random photo.
+	 */
+	public static String getRandomList(ArrayList<String> list) {
+		int index = ThreadLocalRandom.current().nextInt(list.size());
+		return list.get(index);
+	}
+
 }

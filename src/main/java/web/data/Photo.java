@@ -2,12 +2,21 @@ package web.data;
 
 import java.util.Date;
 
-
+/**
+ * The basic photo object.
+ */
 public class Photo {
+	
+	// The unique user ID
 	private String id;
+	// The unique name
 	private String name;
+	// The name of the person creating the object.
 	private String owner;
+	// The timestamp when the photo information is being created.
 	private String creationTime = new Date(System.currentTimeMillis()).toString();
+	// The path to a specific file.
+	private String filePath;
 	
 	public void setId(String id) {
 		this.id = id;
@@ -28,6 +37,10 @@ public class Photo {
 		this.creationTime = creationTime;
 	}
 	
+	public void setFilePath(String filePath) {
+		this.filePath = filePath;
+	}
+	
 	public String getId() {
 		return id;
 	}
@@ -42,5 +55,9 @@ public class Photo {
 	
 	public String getCreationTime() {
 		return creationTime;
+	}
+	
+	public String getFilePath() {
+		return filePath;
 	}
 }

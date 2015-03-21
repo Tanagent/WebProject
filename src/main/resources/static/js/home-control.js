@@ -1,4 +1,3 @@
-
 function healthCheck() {
 	$.ajax(
 			{
@@ -20,7 +19,7 @@ function deletePhoto(photoId) {
 	$.ajax(
 			{
 				type : "DELETE",
-				url  : "/cs480/user/" + photoId,
+				url  : "/album/user/" + photoId,
 				data : {
 				},
 				success : function(result) {
@@ -42,7 +41,7 @@ function addPhoto() {
 		$.ajax(
 				{
 					type : "POST",
-					url  : "/cs480/user/" + photoId,
+					url  : "/album/user/" + photoId,
 					data : {
 						"name" : userName,
 						"owner" : userOwner
@@ -65,7 +64,7 @@ function getPhoto(photoId) {
 		$.ajax(
 				{
 					type : "GET",
-					url  : "/cs480/user/" + photoId,
+					url  : "/album/user/" + photoId,
 					data : {
 					},
 					success : function(result) {
@@ -80,4 +79,20 @@ function getPhoto(photoId) {
 	} else {
 		alert("Invalid photo Id");
 	}
+}
+
+function deletePicture(photo) {
+	$.ajax(
+			{
+				type : "DELETE",
+				url  : "/photo/" + photo,
+				data : {
+				},
+				success : function(result) {
+					location.reload();
+				},
+				error: function (jqXHR, exception) {
+					alert("Failed to delete the picture.");
+				}
+			});
 }

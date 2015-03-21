@@ -47,7 +47,7 @@
         <hr>
         
         <div>
-            <label>Add Photos</label>
+            <label>Add Photos Info</label>
             <table border="1">
                 <tr>
                     <td>ID</td>
@@ -98,25 +98,17 @@
     <div>
         <label>Photos:</label>    
         <ul>
-            <#if photos??>
-            <#list photos as photo>
+            <#if pictures??>
+            <#list pictures as picture>
               <li>
                 <div>
                     <div>
-                        ${photo}
-                        <button id="deleteButton" onclick="deletePhoto('${photo.id}', '${photo}')">Delete</button>
+                    	${picture}
+                        <button id="deleteButton" onclick="deletePicture('${picture}')">Delete</button>
                     </div>
                     <div>
-                        <#list filters as filter>
-                            <input class="filter-checkbox" id="${photo}" type="checkbox" name="${filter}">${filter}</input>
-                        </#list>
-                        <div>
-                            <button id="applyFilterButton" onclick="applyFilters('${user.id}', '${photo}')">Apply</button>
-                        </div>
-                    </div>
-                    <div>
-                        <a href="/iphoto/${user.id}/photo/${photo}" target="_blank">
-                            <img src="/iphoto/${user.id}/photo/${photo}" width="240"/>
+                        <a href="/photo/${picture}" target="_blank">
+                            <img src="/photo/${picture}" width="240"/>
                         </a>
                     </div>
                 </div>

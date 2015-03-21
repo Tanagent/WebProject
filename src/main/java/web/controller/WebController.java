@@ -2,24 +2,18 @@ package web.controller;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
-
-
-
-
-
-
-
-
-
-
-
-
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,55 +33,68 @@ import web.data.provider.PhotoManager;
 import web.util.ResourceResolver;
 import web.LaunchWeb;
 
+/**
+ * This is the controller used by Spring framework.
+ * 
+ * The basic function of this controller is to map
+ * each HTTP API Path to the correspondent method.
+ */
 
 @SuppressWarnings("unused")
 @RestController
 @Controller
 public class WebController implements java.io.Serializable {
 
+	/**
+	 * When the class instance is annotated with
+	 * {@link Autowired}, it will be looking for the actual
+	 * instance from the defined beans.
+	 * 
+	 * In our project, all the beans are defined in
+	 * the {@link LaunchWeb} class.
+	 */
 	@Autowired
 	private PhotoManager photoManager;
 	
+	/**
+	 * Represents the static Logger that can be used
+	 * to register logs throughout our WebController class.
+	 */
 	private static Logger logger = LoggerFactory.getLogger(WebController.class);
 	
-	// http://localhost:8080/example
+	/**
+	 * This is a simple example of how the HTTP API works.
+	 * It returns a String "OK" in the HTTP reponse.
+	 * To try it, run the web application locally,
+	 * in your web browser, type the link:
+	 * http://localhost:8080/example
+	 * @return
+	 */
 	@RequestMapping(value = "/example", method = RequestMethod.GET)
 	String healthCheck() {
+		// TODO: Replace the following return with your GitHub ID
+		// in the exact format: Name (GitHubID)
+		// For instance,
+		// return "John Smith (smithj01)";
+		// Then, run the application locally and check your changes
+		// with the URL: http://localhost:8080/
 		return "Lets check ";
 	}
 	
 	/**
      * This is a simple example of how to use a data manager
      * to retrieve the data and return it as an HTTP response.
-     * <p>
+     * 
      * Note, when it returns from the Spring, it will be
      * automatically converted to JSON format.
-     * <p>
+     * 
      * Try it in your web browser:
-     * 	http://localhost:8080/cs480/user/user101
+     * 	http://localhost:8080/album/user/user101
      */
-    @RequestMapping(value = "/cs480/user/{photoId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/album/user/{photoId}", method = RequestMethod.GET)
     Photo getPhoto(@PathVariable("photoId") String photoId) {
     	Photo photo = photoManager.getPhoto(photoId);
         return photo;
-    }
-    
-    @RequestMapping(value = "/{photoId}", method = RequestMethod.GET)
-    void getPhoto(
-            @PathVariable("userId") String userId,
-            @PathVariable("photoId") String photoId,
-            HttpServletResponse response) {
-    	long startTime = System.currentTimeMillis();
-    	try {
-    		logger.debug("Accessing the getPhoto method in the WebController class");
-    		FSPhotoManager.getPhoto(userId, photoId, response);
-    		long endTime = System.currentTimeMillis() - startTime;
-    	} catch (IOException e) {
-    		logger.error("IOException with using getPhoto");
-    		logger.error("Exception: " + e);
-    		e.printStackTrace();
-    		long endTime = System.currentTimeMillis() - startTime;
-    	}
     }
     
     /**
@@ -96,7 +103,7 @@ public class WebController implements java.io.Serializable {
      * exists before).
      *
      * You can test this with a HTTP client by sending
-     *  http://localhost:8080/cs480/user/user101
+     *  http://localhost:8080/album/user/user101
      *  	name=John major=CS
      *
      * Note, the URL will not work directly in browser, because
@@ -106,9 +113,9 @@ public class WebController implements java.io.Serializable {
      * @param id
      * @param name
      * @param owner
-     * @return
+     * @return the updated photo information.
      */
-    @RequestMapping(value = "/cs480/user/{photoId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/album/user/{photoId}", method = RequestMethod.POST)
     Photo updatePhoto(
     		@PathVariable("photoId") String id,
     		@RequestParam("name") String name,
@@ -126,18 +133,18 @@ public class WebController implements java.io.Serializable {
      *
      * @param userId
      */
-    @RequestMapping(value = "/cs480/user/{photoId}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/album/user/{photoId}", method = RequestMethod.DELETE)
     void deletePhoto(
     		@PathVariable("photoId") String photoId) {
     	photoManager.deletePhoto(photoId);
     }
 
     /**
-     * This API lists all the users in the current database.
+     * This API lists all the photos in the current database.
      *
-     * @return
+     * @return the photo list.
      */
-    @RequestMapping(value = "/cs480/users/list", method = RequestMethod.GET)
+    @RequestMapping(value = "/album/users/list", method = RequestMethod.GET)
     List<Photo> listAllPhotos() {
     	return photoManager.listAllPhotos();
     }
@@ -147,20 +154,36 @@ public class WebController implements java.io.Serializable {
      * This method provide a simple web UI for you to test the different
      * functionalities used in this web service.
      */
-    @RequestMapping(value = "/cs480/home", method = RequestMethod.GET)
+    @RequestMapping(value = "/album/home", method = RequestMethod.GET)
     ModelAndView getPhotoHomepage() {
         ModelAndView modelAndView = new ModelAndView("home");
         modelAndView.addObject("photos", listAllPhotos());
+        modelAndView.addObject("pictures", listPhotos());
         return modelAndView;
     }
     
+    /**
+     * This method prompts the user to upload a file.
+     * @return The string prompting the user.
+     */
     @RequestMapping(value="/upload", method=RequestMethod.GET)
     public @ResponseBody String provideUploadInfo() {
         return "You can upload a file by posting to this same URL.";
     }
     
+    /**
+     * This method uploads a picture from your computer and
+     * stores it in a folder "Photobucket". After the file
+     * has been uploaded, 
+     * 
+     * 
+     * @param name - the name of the file.
+     * @param file - the uploaded file.
+     * @return The string confirming that the file has been uploaded.
+     */
     @RequestMapping(value="/upload", method=RequestMethod.POST)
-    public @ResponseBody String handleFileUpload(@RequestParam("name") String name, 
+    public @ResponseBody String handleFileUpload(
+    		@RequestParam("name") String name, 
             @RequestParam("file") MultipartFile file){
         if (!file.isEmpty()) {
             try {
@@ -168,7 +191,7 @@ public class WebController implements java.io.Serializable {
                 BufferedOutputStream stream = 
                         new BufferedOutputStream(
                         		new FileOutputStream(
-                        				new File("C:\\Users\\Brian\\workspace\\WebProject\\PhotoBucket\\" + name)));
+                        				new File("C:\\Users\\Brian\\workspace\\WebProject\\PhotoBucket\\" + name + ".jpg")));
                 stream.write(bytes);
                 stream.close();
                 return "You successfully uploaded " + name + "!";
@@ -180,25 +203,103 @@ public class WebController implements java.io.Serializable {
         }
     }
     
-    @RequestMapping(value = "/{photoId}", method = RequestMethod.POST)
-    void addPhoto(
-            @PathVariable("userId") String userId,
-            @RequestParam("photoFile") MultipartFile file,
-            HttpServletResponse response) {
-    	long startTime = System.currentTimeMillis();
-    	logger.info("UserID: " + userId);
-    	logger.debug("Accessing the WebController addPhoto method");
-    	try {
-			FSPhotoManager.addPhoto(userId, file);
-			long endTime = System.currentTimeMillis() - startTime;
-		} catch (Exception e) {
-			e.printStackTrace();
-			long endTime = System.currentTimeMillis() - startTime;
-		} 
+    /**
+     * This method displays a specific photo, that is stored in the "PhotoBucket"
+     * folder, in an HTML browser corresponding to the link photo/{photo}. In this
+     * case, the {photo} is the name of a photo, without the extension, that was 
+     * previously uploaded using the "handleFileUpload" method.
+     * 
+     * Try it in your local browser at
+     * http://localhost:8080/photo/{photo}
+     * First upload a file and then use the name of the photo
+     * you uploaded as the {photo} to have it displayed
+     * in your browser.
+     * 
+     * @param photo - the name of the photo uploaded.
+     * @param response - the incoming HTTP response
+     * @throws IOException - exception caused by I/O issues.
+     * @throws FileNotFoundException - exception caused by not finding the file.
+     */
+    @RequestMapping(value = "/photo/{photo}", method = RequestMethod.GET)
+    void getPhoto(
+            @PathVariable("photo") String photo,
+            HttpServletResponse response) throws IOException, FileNotFoundException {
+			logger.warn("Photos must be of type jpg");
+			File photoFile = new File("C:\\Users\\Brian\\workspace\\WebProject\\PhotoBucket\\" + photo + ".jpg");
+			InputStream is = new FileInputStream(photoFile);
+			OutputStream os = response.getOutputStream();
+			IOUtils.copy(is, os);
+			is.close();
+			os.close();
+			response.setContentType("image/jpeg");
+			response.flushBuffer();
     }
     
-    @RequestMapping(value = "/photos", method = RequestMethod.GET)
-    List<String> listPhotos(@PathVariable("userId") String userId) {
-    	return FSPhotoManager.listPhotos(userId);
+    /**
+     * This method displays a random photo stored in the PhotoBuket folder, in an HTML
+     * browser corresponding to the link photo/random.
+     * 
+     * This method calls the static "getRandom" method in the FSPhotoManager class and 
+     * passes in the "listPhotos" method that lists all the name of the photos that are
+     * in the folder. 
+     * @param response - the incoming HTML response.
+     * @throws IOException - exception caused by IO issues.
+     * @throws FileNotFoundException - exception caused by not finding the file.
+     */
+    @RequestMapping(value = "/photo/random", method = RequestMethod.GET)
+    void getRandom(HttpServletResponse response) throws IOException, FileNotFoundException {
+		logger.warn("Photos must be of type jpg");
+		File photoFile = new File("C:\\Users\\Brian\\workspace\\WebProject\\PhotoBucket\\" + FSPhotoManager.getRandomList(FSPhotoManager.listPhotos()) + ".jpg");
+		InputStream is = new FileInputStream(photoFile);
+		OutputStream os = response.getOutputStream();
+		IOUtils.copy(is, os);
+		is.close();
+		os.close();
+		response.setContentType("image/jpeg");
+		response.flushBuffer();
+    }
+    
+    /**
+     * This method deletes a photo when the delete button is clicked on the home page.
+     * 
+     * This method calls the static "deletePhoto" method in the FSPhotoManager class.
+     * This static method has all the coding involved in deleting a specific photo.
+     * We want to abstract this portion out for modular purposes.
+     * 
+     * Try it in your local browser at
+     * http://localhost:8080/album/home
+     * Make sure you have uploaded some photos first then
+     * click on the photo you would like to delete.
+     * 
+     * @param photo - the photo we want to delete.
+     * @return - a String telling us if it failed or not.
+     * @throws IOException - exception caused by IO issues (unable to delete)
+     */
+    @RequestMapping(value = "/photo/{photo}", method = RequestMethod.DELETE)
+    String deletePicture(
+            @PathVariable("photo") String photo) throws IOException {
+    	logger.info("Photo: " + photo);
+    	logger.debug("Calling the deletePhoto method in the WebController class");
+    	return FSPhotoManager.deletePicture(photo);
+    }
+    
+    /**
+     * This method lists all of the photo ID's associated with a given user.
+     * This is done by iterating through the "PhotoBucket" folder.
+     * 
+     * This method calls the static "listPhotos" method in the FSPhotoManager
+     * class. This static method handles all of the coding involved in listing
+     * each photo ID. We want to abstract this portion out for modularity purposes
+     * 
+     * Try it in your local browser at
+     * http://localhost:8080/album/home
+     * Upload several different photos first and then go to this link.
+     * It will display all of the photo names.
+     * 
+     * @return - the list of photo names in the form of a String.
+     */
+    @RequestMapping(value = "/photo", method = RequestMethod.GET)
+    List<String> listPhotos() {
+		return FSPhotoManager.listPhotos();
     }
 }
